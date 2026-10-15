@@ -264,3 +264,38 @@ func TestTileCache(t *testing.T) {
 		}
 	}
 }
+
+func TestMaxRatesAndStretches(t *testing.T) {
+	base := time.Date(2025, 11, 29, 12, 0, 0, 0, time.UTC)
+	var qs []*QSO
+	add := func(sec int, run bool, band string) {
+		qs = append(qs, &QSO{Call: "DL1A", Band: band, Run: run, Time: base.Add(time.Duration(sec) * time.Second)})
+	}
+	// 30 run contacts on 20m, one a minute (60/hour), with an S&P contact on the
+	// other radio in the middle that must not break the run.
+	for i := 0; i < 30; i++ {
+		add(i*60, true, "20m")
+		if i == 10 {
+			add(i*60+30, false, "40m")
+		}
+	}
+	// A 20-minute pause, then 25 fast run contacts on 40m, 30 seconds apart (120/hour).
+	for i := 0; i < 25; i++ {
+		add(29*60+20*60+i*30, true, "40m")
+	}
+	st := runStretches(qs)
+	if len(st) != 2 || st[0].QSOs != 30 || st[1].QSOs != 25 || st[1].Band != "40m" {
+		t.Fatalf("stretches %+v", st)
+	}
+	if int(st[0].Rate+0.5) != 60 || int(st[1].Rate+0.5) != 120 {
+		t.Errorf("stretch rates %.1f %.1f", st[0].Rate, st[1].Rate)
+	}
+	m := computeMaxRates(qs)
+	if m.LongestRun.QSOs != 30 || m.FastestRun.QSOs != 25 || int(m.Best10Q+0.5) != 120 {
+		t.Errorf("max rates %+v longest %+v fastest %+v", m, m.LongestRun, m.FastestRun)
+	}
+	pts := ratePoints(qs)
+	if pts[1][2] != 60 || pts[0][1] != 1 || pts[11][1] != 0 {
+		t.Errorf("points %v", pts[:12])
+	}
+}

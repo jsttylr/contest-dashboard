@@ -17,6 +17,8 @@ It is a single small program. No Node-RED, no Raspberry Pi, no database to insta
 - **Radios**: frequency, mode, operator, run or search-and-pounce, and a red TX marker while transmitting, for every radio N1MM reports.
 - **Contacts over time** by band, **bands and modes** table, **operators** league table, **top countries**, and an **hour by hour** rate sheet.
 - **Operators**: click any operator for their own page (run rate, S&P rate, average rate, best hour and best 10 minutes, time on the air, bands, countries, hour by hour), or use **Compare operators** to see everyone side by side, sortable, with the best in each column highlighted. Run and S&P rates count only the time spent doing each, and leave out breaks over 10 minutes.
+- **Rate over time**: a rolling rate line (over the last 15, 30 or 60 minutes) for each operator, on their own page split into run and S&P, and on the compare page for everyone at once. A dip shows when someone slows down; a gap means they were off the air.
+- **Max rates** like N1MM's rate reports: best 10 and best 100 QSOs in a row, best 15, 30 and 60 minutes, longest run and fastest run of 20 or more contacts, per operator and for the whole station, plus a list of each operator's biggest runs.
 - A **full-screen map** page (the **Map** button), made for a TV or streaming.
 
 ## First run (Windows)

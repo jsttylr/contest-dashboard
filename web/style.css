@@ -148,3 +148,6 @@ th.sort:hover { color: var(--text-primary); }
 td.best { font-weight: 700; color: var(--good); }
 .chart-box.tall { height: 340px; }
 #map.invert-tiles .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }
+.btn.small.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.card h2 .row { gap: 4px; }
+.card h2 .row + .row { margin-left: 10px; }

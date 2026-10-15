@@ -24,6 +24,18 @@
 <main class="grid">
   <div class="span-12 tiles" id="tiles"></div>
   <div class="banner" id="empty" hidden>No contacts from this operator in this contest.</div>
+  <section class="card span-12">
+    <h2>Rate over time <span class="note">QSOs per hour, looking back over the chosen window; gaps are time off the air</span><span class="spacer"></span><span class="row" id="rate-window"></span></h2>
+    <div class="chart-box tall"><canvas id="rolling-chart" aria-label="Run, S&P and overall rate over time"></canvas></div>
+  </section>
+  <section class="card span-5">
+    <h2>Max rates <span class="note">QSOs per hour</span></h2>
+    <table id="maxrates"></table>
+  </section>
+  <section class="card span-7">
+    <h2>Run stretches <span class="note">biggest runs without a break or band change</span></h2>
+    <div class="scroll" style="max-height:320px"><table id="stretches"></table></div>
+  </section>
   <section class="card span-8">
     <h2>Contacts over time <span class="note" id="rate-note"></span></h2>
     <div class="chart-box"><canvas id="runsp-chart" aria-label="Run and S&P contacts per time slot"></canvas></div>

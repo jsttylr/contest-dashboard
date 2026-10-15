@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 	"sync"
@@ -161,13 +162,16 @@ func runDemo(stop chan struct{}, handle func([]byte)) {
 		if r.Intn(40) == 0 {
 			secs += 600 + r.Float64()*1500
 		}
-		return time.Duration(secs * speed[s.op] * float64(time.Second))
+		// Everyone speeds up and slows down over the session (lunch, fatigue...), each on their own cycle.
+		phase := float64(len(s.op)+int(s.op[1])) / 3
+		slump := 1 + 0.45*math.Sin(2*math.Pi*float64(s.next.Unix())/(100*60)+phase)
+		return time.Duration(secs * speed[s.op] * slump * float64(time.Second))
 	}
 	shuffle := func(s *stn) {
 		if r.Intn(25) == 0 {
 			s.band = bands[r.Intn(len(bands))]
 		}
-		if r.Intn(15) == 0 {
+		if r.Intn(40) == 0 {
 			s.run = !s.run
 		}
 		if r.Intn(25) == 0 {

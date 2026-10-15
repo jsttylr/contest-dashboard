@@ -2,7 +2,8 @@
 // One operator's details.
 
 const op = (params.get('op') || '').toUpperCase();
-let runspChart = null, countryChart = null, lastData = null;
+let runspChart = null, countryChart = null, rollingChart = null, lastData = null;
+let rateWindow = 30;
 
 function render(d) {
   lastData = d;
@@ -48,10 +49,36 @@ function render(d) {
     }
   });
 
+  renderRolling(d);
+  el('maxrates').innerHTML = maxRateCells(s.max).map((c, i) => `<tr><th>${esc(maxRateHeads[i])}</th><td class="r">${c}</td></tr>`).join('');
+  el('stretches').innerHTML = '<tr><th>Started (UTC)</th><th>Band</th><th class="r">Length</th><th class="r">QSOs</th><th class="r">Rate</th></tr>' +
+    ((d.stretches || []).length ? d.stretches.map(x => `<tr><td>${hhmm(x.start)}–${hhmm(x.end)}</td>
+      <td><span class="band-dot" style="background:${bandColor(x.band)}"></span>${esc(x.band)}</td><td class="r">${hours(x.minutes / 60)}</td>
+      <td class="r">${fmt(x.qsos)}</td><td class="r"><b>${fmt(Math.round(x.rate))}</b>/hr</td></tr>`).join('') : '<tr><td colspan="5" class="muted">No runs yet.</td></tr>');
+
   bandModeTable(el('bandmode'), d.bands || [], d.modes || [], d.band_mode || {});
   recentTable(el('recent'), d.recent, d.units, false);
   countryChart = countryBars(countryChart, el('country-chart'), d.top_countries);
   hourlyTable(el('hourly'), d.hourly, d.bands || []);
+}
+
+function renderRolling(d) {
+  const pts = d.points || [];
+  if (!pts.length) return;
+  const first = new Date(d.contest_first) / 1000, last = new Date(d.contest_last) / 1000;
+  const r = rollingRates(pts, first, last, rateWindow, stepFor(first, last));
+  rollingChart = upsertChart(rollingChart, el('rolling-chart'), {
+    type: 'line',
+    data: {
+      labels: r.t.map(hhmm),
+      datasets: [
+        { label: 'Run rate', data: r.run, borderColor: seriesColor(0), backgroundColor: seriesColor(0), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
+        { label: 'S&P rate', data: r.sp, borderColor: seriesColor(1), backgroundColor: seriesColor(1), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
+        { label: 'Overall', data: r.all, borderColor: css('--text-secondary'), backgroundColor: css('--text-secondary'), borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
+      ]
+    },
+    options: lineOptions('QSOs per hour')
+  });
 }
 
 async function loadPicker() {
@@ -62,7 +89,8 @@ async function loadPicker() {
 }
 el('op-pick').onchange = e => { location.href = q('operator.html', { op: e.target.value }); };
 
-onThemeToggle(() => { runspChart?.destroy(); countryChart?.destroy(); runspChart = countryChart = null; if (lastData) render(lastData); });
+onThemeToggle(() => { [runspChart, countryChart, rollingChart].forEach(c => c?.destroy()); runspChart = countryChart = rollingChart = null; if (lastData) render(lastData); });
+choiceButtons(el('rate-window'), [[15, '15 min'], [30, '30 min'], [60, '60 min']], rateWindow, v => { rateWindow = v; if (lastData) renderRolling(lastData); });
 startClock();
 el('dash-link').href = q('./');
 el('ops-link').href = q('operators.html');

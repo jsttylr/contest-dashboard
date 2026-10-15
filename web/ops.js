@@ -1,7 +1,8 @@
 'use strict';
 // Operator comparison page.
 
-let ratesChart = null, cumulChart = null, lastData = null;
+let ratesChart = null, cumulChart = null, rollingChart = null, lastData = null;
+let rateWindow = 30, rateKind = 'all';
 const sortState = { key: 'qsos', dir: -1 };
 
 const columns = [
@@ -45,6 +46,12 @@ function render(d) {
   const ops = d.operators || [];
   sortableTable(el('compare'), columns, ops, sortState, (o, td) => '<tr>' + columns.map(c => td(c, cellText(c, o))).join('') + '</tr>');
 
+  renderRolling(d);
+  el('maxrates').innerHTML = '<tr><th>Operator</th>' + maxRateHeads.map(h => `<th class="r">${esc(h)}</th>`).join('') + '</tr>' +
+    ops.concat(ops.length > 1 ? [{ name: 'Whole station', max: d.station, station: true }] : []).map(o => '<tr>' +
+      (o.station ? '<td><b>Whole station</b></td>' : `<td><a class="oplink call" href="${q('operator.html', { op: o.name })}">${esc(o.name)}</a></td>`) +
+      maxRateCells(o.max || {}).map(c => `<td class="r">${c}</td>`).join('') + '</tr>').join('');
+
   const s1 = seriesColor(0), s2 = seriesColor(1);
   ratesChart = upsertChart(ratesChart, el('rates-chart'), {
     type: 'bar',
@@ -85,7 +92,25 @@ function render(d) {
   });
 }
 
-onThemeToggle(() => { ratesChart?.destroy(); cumulChart?.destroy(); ratesChart = cumulChart = null; if (lastData) render(lastData); });
+function renderRolling(d) {
+  const ops = (d.operators || []).slice(0, 8);
+  if (!ops.length || !d.active) return;
+  const first = new Date(d.active.first) / 1000, last = new Date(d.active.last) / 1000;
+  const step = stepFor(first, last);
+  const color = opColors(ops);
+  let labels = [];
+  const datasets = ops.map(o => {
+    const r = rollingRates(d.points[o.name] || [], first, last, rateWindow, step);
+    labels = r.t.map(hhmm);
+    return { label: o.name, data: rateKind === 'run' ? r.run : r.all, borderColor: color(o.name), backgroundColor: color(o.name), borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.25 };
+  });
+  el('rolling-note').textContent = (rateKind === 'run' ? 'QSOs per hour while running' : 'QSOs per hour') + `, over the last ${rateWindow} minutes at each point; gaps are time off the air` + ((d.operators || []).length > 8 ? '; busiest 8 operators' : '');
+  rollingChart = upsertChart(rollingChart, el('rolling-chart'), { type: 'line', data: { labels, datasets }, options: lineOptions('QSOs per hour') });
+}
+
+onThemeToggle(() => { [ratesChart, cumulChart, rollingChart].forEach(c => c?.destroy()); ratesChart = cumulChart = rollingChart = null; if (lastData) render(lastData); });
+choiceButtons(el('rate-kind'), [['all', 'All contacts'], ['run', 'Running only']], rateKind, v => { rateKind = v; if (lastData) renderRolling(lastData); });
+choiceButtons(el('rate-window'), [[15, '15 min'], [30, '30 min'], [60, '60 min']], rateWindow, v => { rateWindow = v; if (lastData) renderRolling(lastData); });
 startClock();
 el('dash-link').href = q('./');
 followUpdates(async () => render(await (await fetch(q('api/operators'))).json()));

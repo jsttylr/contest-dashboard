@@ -176,3 +176,65 @@ function countryBars(chart, canvas, countries) {
 }
 
 const legendOpts = { position: 'top', align: 'end', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } };
+
+// ---- rates over time ----
+
+// rollingRates turns rate points ([unix time, running 1/0, credited seconds]) into
+// QSOs-per-hour lines sampled every stepMin minutes, each looking back windowMin minutes.
+// Overall rate is contacts in the window per hour. Run and S&P rates divide by the time
+// actually spent running or searching, so they say how fast the operator was while doing it.
+// A point is left empty when the operator wasn't on the air, so the line breaks.
+function rollingRates(points, first, last, windowMin, stepMin) {
+  const W = windowMin * 60, step = stepMin * 60;
+  const start = Math.ceil(first / step) * step, end = Math.ceil(last / step) * step;
+  const out = { t: [], all: [], run: [], sp: [] };
+  let lo = 0, hi = 0;
+  for (let t = start; t <= end; t += step) {
+    while (hi < points.length && points[hi][0] <= t) hi++;
+    while (lo < hi && points[lo][0] <= t - W) lo++;
+    let n = 0, nRun = 0, secRun = 0, secSP = 0;
+    for (let i = lo; i < hi; i++) {
+      n++;
+      if (points[i][1]) { nRun++; secRun += points[i][2]; } else secSP += points[i][2];
+    }
+    const rate = (k, sec) => sec >= Math.min(180, W / 4) ? Math.round(k * 3600 / sec) : null;
+    out.t.push(t * 1000);
+    out.all.push(n ? Math.round(n * 3600 / W) : null);
+    out.run.push(rate(nRun, secRun));
+    out.sp.push(rate(n - nRun, secSP));
+  }
+  return out;
+}
+
+function stepFor(first, last) {
+  const hrs = (last - first) / 3600;
+  return hrs > 24 ? 15 : hrs > 8 ? 10 : 5;
+}
+
+// A row of small buttons that picks one value, e.g. the rate window.
+function choiceButtons(box, choices, current, onPick) {
+  box.innerHTML = choices.map(([v, label]) => `<button class="btn small${v === current ? ' on' : ''}" data-v="${v}">${esc(label)}</button>`).join('');
+  box.querySelectorAll('button').forEach(b => b.onclick = () => {
+    box.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    onPick(isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v);
+  });
+}
+
+function lineOptions(yTitle) {
+  return {
+    animation: false, maintainAspectRatio: false, spanGaps: false,
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      x: { grid: { display: false }, ticks: { autoSkip: true, maxRotation: 0 } },
+      y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: css('--border') }, title: { display: !!yTitle, text: yTitle } }
+    },
+    plugins: { legend: legendOpts, tooltip: { filter: i => i.parsed.y != null } }
+  };
+}
+
+function maxRateCells(m) {
+  const r = v => v ? fmt(Math.round(v)) : '<span class="muted">·</span>';
+  const st = s => s ? `${fmt(s.qsos)} QSOs in ${hours(s.minutes / 60)} <span class="muted">(${fmt(Math.round(s.rate))}/hr, ${esc(s.band)}, ${hhmm(s.start)})</span>` : '<span class="muted">·</span>';
+  return [r(m.best_10q), r(m.best_100q), r(m.best_15m), r(m.best_30m), r(m.best_60m), st(m.longest_run), st(m.fastest_run)];
+}
+const maxRateHeads = ['Best 10 QSOs', 'Best 100 QSOs', 'Best 15 min', 'Best 30 min', 'Best 60 min', 'Longest run', 'Fastest run (20+ QSOs)'];

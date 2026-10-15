@@ -28,6 +28,14 @@
       Time on air leaves out breaks of 30 minutes or more, as contest rules do.
     </p>
   </section>
+  <section class="card span-12">
+    <h2>Rate over time <span class="note" id="rolling-note"></span><span class="spacer"></span><span class="row" id="rate-kind"></span><span class="row" id="rate-window"></span></h2>
+    <div class="chart-box tall"><canvas id="rolling-chart" aria-label="Rate over time per operator"></canvas></div>
+  </section>
+  <section class="card span-12">
+    <h2>Max rates <span class="note">QSOs per hour at each operator's best, like N1MM's rate reports</span></h2>
+    <div class="scroll" style="max-height:none"><table id="maxrates"></table></div>
+  </section>
   <section class="card span-6">
     <h2>Run rate and S&amp;P rate <span class="note">QSOs per hour</span></h2>
     <div class="chart-box tall"><canvas id="rates-chart" aria-label="Run and S&P rate per operator"></canvas></div>

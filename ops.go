@@ -37,6 +37,7 @@ type OpStats struct {
 	Bands     map[string]int `json:"bands"`
 	Modes     map[string]int `json:"modes"`
 	Stations  []string       `json:"stations"`
+	Max       MaxRates       `json:"max"`
 }
 
 type OpsData struct {
@@ -44,9 +45,12 @@ type OpsData struct {
 	Active    *ContestInfo `json:"active"`
 	Operators []OpStats    `json:"operators"`
 	// Cumulative QSOs per operator at the end of each time slot, for the comparison chart.
-	Slots   []time.Time      `json:"slots"`
-	Cumul   map[string][]int `json:"cumulative"`
-	SlotMin int              `json:"slot_min"`
+	Slots   []time.Time `json:"slots"`
+	Station MaxRates    `json:"station"` // the whole station's max rates
+	// Each operator's contacts, for the rate-over-time chart.
+	Points  map[string][]RatePoint `json:"points"`
+	Cumul   map[string][]int       `json:"cumulative"`
+	SlotMin int                    `json:"slot_min"`
 }
 
 type OpDetail struct {
@@ -62,6 +66,10 @@ type OpDetail struct {
 	Hourly    []Bucket                  `json:"hourly"`
 	Recent    []RecentQSO               `json:"recent"`
 	Countries []Count                   `json:"top_countries"`
+	Stretches []Stretch                 `json:"stretches"`
+	Points    []RatePoint               `json:"points"`
+	First     time.Time                 `json:"contest_first"`
+	Last      time.Time                 `json:"contest_last"`
 }
 
 type RunSPBucket struct {
@@ -129,6 +137,7 @@ func computeOpStats(name string, qs []*QSO, total int, ref time.Time) OpStats {
 	st.Best60 = bestWindow(qs, time.Hour)
 	st.Best10 = bestWindow(qs, 10*time.Minute)
 	st.Countries = len(countries)
+	st.Max = computeMaxRates(qs)
 	if total > 0 {
 		st.Share = 100 * float64(st.QSOs) / float64(total)
 	}
@@ -181,7 +190,7 @@ func activeQSOs(snap Snapshot, cfg Config, now time.Time) (*ContestInfo, []*QSO,
 }
 
 func BuildOps(snap Snapshot, cfg Config, now time.Time) *OpsData {
-	d := &OpsData{Version: snap.Version, Operators: []OpStats{}, Cumul: map[string][]int{}}
+	d := &OpsData{Version: snap.Version, Operators: []OpStats{}, Cumul: map[string][]int{}, Points: map[string][]RatePoint{}}
 	active, qsos, ref := activeQSOs(snap, cfg, now)
 	d.Active = active
 	if len(qsos) == 0 {
@@ -189,7 +198,9 @@ func BuildOps(snap Snapshot, cfg Config, now time.Time) *OpsData {
 	}
 	for name, qs := range groupByOp(qsos) {
 		d.Operators = append(d.Operators, computeOpStats(name, qs, len(qsos), ref))
+		d.Points[name] = ratePoints(qs)
 	}
+	d.Station = computeMaxRates(qsos)
 	sort.Slice(d.Operators, func(i, j int) bool {
 		if d.Operators[i].QSOs != d.Operators[j].QSOs {
 			return d.Operators[i].QSOs > d.Operators[j].QSOs
@@ -259,6 +270,9 @@ func BuildOpDetail(snap Snapshot, cfg Config, op string, now time.Time) *OpDetai
 		}
 	}
 	d.Countries = sortedCounts(countries, 12)
+	d.Stretches = topStretches(mine, 12)
+	d.Points = ratePoints(mine)
+	d.First, d.Last = qsos[0].Time, qsos[len(qsos)-1].Time
 
 	// Run and S&P contacts over the whole contest, so the chart lines up with the station's.
 	d.BucketMin = slotMinutes(qsos)

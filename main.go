@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var appVersion = "0.3.0"
+var appVersion = "0.4.0"
 
 func main() {
 	dir := flag.String("data", dataDir(), "folder for settings and the contact log")
