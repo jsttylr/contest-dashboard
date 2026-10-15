@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Settings</title>
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=t||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+</head>
+<body>
+<header class="top">
+  <h1>Settings</h1>
+  <span class="sub" id="version"></span>
+  <span class="spacer"></span>
+  <nav><a class="btn" href="./">Dashboard</a><a class="btn" href="map.html">Map</a></nav>
+</header>
+<main class="grid">
+  <div class="banner" id="readonly" hidden>
+    You're looking at this from another computer, so settings are read-only here. Change them on the computer running the dashboard.
+  </div>
+
+  <section class="card span-12">
+    <h2>Is N1MM reaching the dashboard?</h2>
+    <div id="listen"></div>
+    <p class="muted" id="urls"></p>
+  </section>
+
+  <section class="card span-12">
+    <h2>Station</h2>
+    <form class="form" id="form">
+      <label for="my_call">Contest callsign</label><input id="my_call" placeholder="taken from N1MM if left empty">
+      <label for="my_grid">Grid square</label><input id="my_grid" placeholder="e.g. EM48 or EM48tq">
+      <div class="help">Where your station is on the map, and where the great-circle lines start.</div>
+      <label for="title">Dashboard heading</label><input id="title" placeholder="e.g. W1AW Multi-2">
+      <label for="units">Distances</label>
+      <select id="units"><option value="mi">Miles</option><option value="km">Kilometres</option></select>
+      <label for="map_tiles">Map background</label>
+      <select id="map_tiles"><option value="online">Online map (needs internet)</option><option value="offline">Simple outline (works offline)</option></select>
+      <label for="udp_ports">UDP ports</label><input id="udp_ports" placeholder="12060, 12061, 12062">
+      <div class="help">Ports to listen on. Each must match a port in N1MM's broadcast settings. Default 12060, 12061, 12062.</div>
+      <label for="web_port">Web page port</label><input id="web_port" type="number" min="1" max="65535">
+      <div class="help">Takes effect after the program restarts.</div>
+      <span></span><div class="row"><button class="primary" type="submit">Save</button><span id="saved" class="muted"></span></div>
+    </form>
+  </section>
+
+  <section class="card span-12">
+    <h2>Contests</h2>
+    <div class="scroll"><table id="contests"></table></div>
+    <div class="row" style="margin-top:12px">
+      <label class="btn" for="adif">Import an ADIF log…</label>
+      <input type="file" id="adif" accept=".adi,.adif,.txt" hidden>
+      <span id="import-msg" class="muted"></span>
+    </div>
+    <p class="muted">Importing is handy for looking back at a past contest: in N1MM use File, Export to ADIF.</p>
+  </section>
+
+  <section class="card span-12">
+    <h2>Demo contest</h2>
+    <p>Makes up a two-radio phone contest with three hours of history and new contacts every few seconds, so you can try the dashboard without N1MM. It shows up as <b>DEMO-CQ-WW-SSB</b> and you can delete it above when done.</p>
+    <div class="row"><button id="demo"></button></div>
+  </section>
+
+  <section class="card span-12">
+    <h2>Activity log</h2>
+    <pre class="log" id="log"></pre>
+    <div class="row" style="margin-top:12px"><button class="danger" id="quit">Stop the dashboard program</button></div>
+  </section>
+</main>
+<script src="settings.js"></script>
+</body>
+</html>

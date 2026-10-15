@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contest Map</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body class="view-map">
+<header class="top">
+  <h1 id="title">Contest Dashboard</h1>
+  <span class="sub" id="contest-name"></span>
+  <span class="pill" id="live"><span class="dot"></span><span id="live-text">Waiting</span></span>
+  <span class="spacer"></span>
+  <span class="legend" id="map-legend" style="margin:0"></span>
+  <span class="clock" id="clock"></span>
+  <nav>
+    <a class="btn" href="./" id="dash-link">Dashboard</a>
+    <button id="theme" title="Switch between light and dark">Light/Dark</button>
+  </nav>
+</header>
+<div class="overlay" id="tiles"></div>
+<div id="map"></div>
+<script src="vendor/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

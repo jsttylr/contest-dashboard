@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test -race ./...
+      - name: Build all platforms
+        run: |
+          mkdir -p dist
+          build() {
+            CGO_ENABLED=0 GOOS=$1 GOARCH=$2 go build -trimpath -ldflags="-s -w $4" -o "dist/$3" .
+          }
+          build windows amd64 contest-dashboard.exe "-H windowsgui"
+          (cd dist && zip -q -j contest-dashboard-windows.zip contest-dashboard.exe ../README.md ../LICENSE && rm contest-dashboard.exe)
+          build darwin arm64 contest-dashboard-mac-apple-silicon
+          build darwin amd64 contest-dashboard-mac-intel
+          build linux amd64 contest-dashboard-linux
+          build linux arm64 contest-dashboard-raspberry-pi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: contest-dashboard
+          path: dist/*
+      - name: Attach downloads to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/* --clobber

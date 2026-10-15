@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contest Dashboard</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body class="view-dash">
+<header class="top">
+  <h1 id="title">Contest Dashboard</h1>
+  <span class="sub" id="contest-name"></span>
+  <span class="pill" id="live"><span class="dot"></span><span id="live-text">Waiting</span></span>
+  <span class="spacer"></span>
+  <span class="clock" id="clock"></span>
+  <nav>
+    <select id="contest-pick" title="Contest to show"></select>
+    <a class="btn" href="map.html" id="map-link">Map</a>
+    <a class="btn" href="settings.html">Settings</a>
+    <button id="theme" title="Switch between light and dark">Light/Dark</button>
+  </nav>
+</header>
+<main class="grid">
+  <div class="span-12 tiles" id="tiles"></div>
+  <div class="banner" id="empty" hidden>
+    No contacts yet. Point N1MM+ at this computer (see Settings), or start the demo contest on the Settings page.
+  </div>
+  <section class="card span-7">
+    <h2>Map <span class="note" id="map-note"></span></h2>
+    <div id="map"></div>
+    <div class="legend" id="map-legend"></div>
+  </section>
+  <section class="card span-5">
+    <h2>Radios</h2>
+    <div class="radios" id="radios"></div>
+    <h2 style="margin-top:14px">Last contacts</h2>
+    <div class="scroll" style="max-height:300px"><table id="recent"></table></div>
+  </section>
+  <section class="card span-8">
+    <h2>Contacts over time <span class="note" id="rate-note"></span></h2>
+    <div class="chart-box"><canvas id="rate-chart" aria-label="Contacts per time slot, by band"></canvas></div>
+  </section>
+  <section class="card span-4">
+    <h2>Bands and modes</h2>
+    <table id="bandmode"></table>
+  </section>
+  <section class="card span-6">
+    <h2>Operators</h2>
+    <div class="scroll"><table id="ops"></table></div>
+  </section>
+  <section class="card span-6">
+    <h2>Top countries</h2>
+    <div class="chart-box"><canvas id="country-chart" aria-label="Contacts by country"></canvas></div>
+  </section>
+  <section class="card span-12">
+    <h2>Hour by hour <span class="note">contacts each UTC hour, by band</span></h2>
+    <div class="scroll"><table id="hourly" class="heat"></table></div>
+  </section>
+</main>
+<script src="vendor/chart.umd.js"></script>
+<script src="vendor/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
