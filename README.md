@@ -12,7 +12,8 @@ It is a single small program. No Node-RED, no Raspberry Pi, no database to insta
 
 - **Score, QSOs, mults and points.** The score is the one N1MM calculates and broadcasts, so it is always right for the contest you're in. If N1MM isn't sending score reports, the dashboard shows an estimate (points × mults) and says so.
 - **Rates**: last hour, last 10 minutes (as an hourly rate), and the best 60 minutes so far.
-- **Map** of every contact, coloured by band, with lines to the 25 most recent. Contacts are placed by grid square when the exchange has one, by state, province or ARRL section in domestic contests, and otherwise by country.
+- **Map** of every contact, coloured by band, with lines to the 25 most recent. Contacts are placed by grid square when the exchange has one, by state, province or ARRL section in domestic contests, and otherwise by country (from the callsign prefix, using the same country file loggers use). No callsign lookups or internet services are needed for this.
+- The map background is a free one that needs no account or API key: Esri's grey map (default) or OpenStreetMap, chosen on the Settings page. The dashboard fetches map pieces itself and saves them, so a map that's been viewed once keeps working without internet.
 - **Radios**: frequency, mode, operator, run or search-and-pounce, and a red TX marker while transmitting, for every radio N1MM reports.
 - **Contacts over time** by band, **bands and modes** table, **operators** league table, **top countries**, and an **hour by hour** rate sheet.
 - **Operators**: click any operator for their own page (run rate, S&P rate, average rate, best hour and best 10 minutes, time on the air, bands, countries, hour by hour), or use **Compare operators** to see everyone side by side, sortable, with the best in each column highlighted. Run and S&P rates count only the time spent doing each, and leave out breaks over 10 minutes.
@@ -66,6 +67,10 @@ Then open `http://<that machine's address>:8060/` from any browser on your netwo
 
 The image tags are `latest` (newest release), a version number such as `0.1.0`, and `main` (newest build, may be unfinished).
 
+## Updating
+
+Download the new zip and run the new `contest-dashboard.exe`. If an older version is still running, the new one stops it and takes over; your settings and contacts are kept.
+
 ## Where things are kept
 
 Settings (`config.json`), the contact log (`contacts.jsonl`) and a log file are kept in:
@@ -84,7 +89,7 @@ Install Go 1.24 or newer, then `go build .` in this folder. `go test ./...` runs
 ## Credits
 
 - Country data: AD1C's [country files](https://www.country-files.com/), via `@ham2k/lib-country-files` (MIT).
-- Map: [Leaflet](https://leafletjs.com/) (BSD-2-Clause), with the outline from [world-atlas](https://github.com/topojson/world-atlas) / Natural Earth (ISC, public domain) and online tiles from OpenStreetMap contributors and CARTO.
+- Map: [Leaflet](https://leafletjs.com/) (BSD-2-Clause), with the outline from [world-atlas](https://github.com/topojson/world-atlas) / Natural Earth (ISC, public domain). Online map tiles from Esri and OpenStreetMap contributors.
 - Charts: [Chart.js](https://www.chartjs.org/) (MIT).
 - Inspired by the Node-Red Contesting Dashboard.
 

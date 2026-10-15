@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"testing"
 	"time"
@@ -228,5 +231,36 @@ func TestOperatorRates(t *testing.T) {
 	}
 	if st.Best10 != 5 || st.Best60 != 5 || st.Share != 50 || st.Last60 != 1 {
 		t.Errorf("best10 %d best60 %d share %.0f last60 %d", st.Best10, st.Best60, st.Share, st.Last60)
+	}
+}
+
+func TestTileCache(t *testing.T) {
+	hits := 0
+	png := []byte("\x89PNG\r\n\x1a\nfake")
+	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(png)
+	}))
+	defer up.Close()
+	tileSources["test"] = up.URL + "/{z}/{x}/{y}.png"
+	defer delete(tileSources, "test")
+	tc := NewTileCache(t.TempDir())
+	for i := 0; i < 2; i++ {
+		rec := httptest.NewRecorder()
+		tc.ServeHTTP(rec, httptest.NewRequest("GET", "/tiles/test/2/1/3", nil))
+		if rec.Code != 200 || !bytes.Equal(rec.Body.Bytes(), png) {
+			t.Fatalf("got %d %q", rec.Code, rec.Body.String())
+		}
+	}
+	if hits != 1 {
+		t.Errorf("second request should come from the disk cache, upstream hit %d times", hits)
+	}
+	for _, bad := range []string{"/tiles/test/2/4/0", "/tiles/test/9/0/0", "/tiles/nope/1/0/0", "/tiles/test/1/../0"} {
+		rec := httptest.NewRecorder()
+		tc.ServeHTTP(rec, httptest.NewRequest("GET", bad, nil))
+		if rec.Code != 404 {
+			t.Errorf("%s: want 404, got %d", bad, rec.Code)
+		}
 	}
 }

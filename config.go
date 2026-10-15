@@ -17,11 +17,11 @@ type Config struct {
 	Units    string `json:"units"`     // mi or km
 	Contest  string `json:"contest"`   // contest key to show; empty = the latest one
 	Title    string `json:"title"`     // optional heading for the dashboard
-	MapTiles string `json:"map_tiles"` // online or offline
+	MapTiles string `json:"map_tiles"` // esri, osm or offline
 }
 
 func defaultConfig() *Config {
-	return &Config{WebPort: 8060, UDPPorts: []int{12060, 12061, 12062}, Units: "mi", MapTiles: "online"}
+	return &Config{WebPort: 8060, UDPPorts: []int{12060, 12061, 12062}, Units: "mi", MapTiles: "esri"}
 }
 
 func (c *Config) fillDefaults() {
@@ -35,8 +35,8 @@ func (c *Config) fillDefaults() {
 	if c.Units != "km" {
 		c.Units = "mi"
 	}
-	if c.MapTiles != "offline" {
-		c.MapTiles = "online"
+	if c.MapTiles != "osm" && c.MapTiles != "offline" {
+		c.MapTiles = "esri" // also upgrades the old "online" setting
 	}
 	c.MyCall = strings.ToUpper(strings.TrimSpace(c.MyCall))
 	c.MyGrid = strings.TrimSpace(c.MyGrid)

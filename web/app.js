@@ -15,7 +15,7 @@ onThemeToggle(() => {
 startClock();
 
 // ---- map ----
-let map, tiles, dots, lines, homeMarker, land, mapTilesMode = 'online';
+let map, tiles, dots, lines, homeMarker, land, mapTilesMode = 'esri';
 const landStyle = () => ({ color: css('--border'), weight: 0.6, fillColor: css('--land'), fillOpacity: 1 });
 function initMap() {
   map = L.map('map', { preferCanvas: true, worldCopyJump: true, zoomSnap: 0.5, minZoom: 1, zoomControl: false }).setView([30, -40], 2);
@@ -33,11 +33,15 @@ function setTiles(force) {
   if (!map) return;
   if (tiles && !force) return;
   if (tiles) { map.removeLayer(tiles); tiles = null; }
-  if (mapTilesMode !== 'online') return;
   const dark = document.documentElement.dataset.theme !== 'light';
-  tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/' + (dark ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 10,
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  // OpenStreetMap only comes in light colours, so dark mode inverts it.
+  el('map').classList.toggle('invert-tiles', dark && mapTilesMode === 'osm');
+  if (mapTilesMode === 'offline') return;
+  const src = mapTilesMode === 'osm' ? 'osm' : dark ? 'esri-dark' : 'esri-light';
+  tiles = L.tileLayer('tiles/' + src + '/{z}/{x}/{y}', {
+    maxNativeZoom: 8, maxZoom: 10,
+    attribution: mapTilesMode === 'osm' ? '&copy; OpenStreetMap contributors'
+      : 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
   }).addTo(map);
 }
 

@@ -9,6 +9,8 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags=
 
 FROM scratch
 COPY --from=build /out/contest-dashboard /contest-dashboard
+# Certificates so the map tiles can be fetched over HTTPS.
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Settings and the contact log live in /data; keep it on a volume so they survive updates.
 # Settings can be changed from any computer that can reach the page, since you can't sit
 # "at" a container.

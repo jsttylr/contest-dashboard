@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -16,7 +17,7 @@ import (
 	"time"
 )
 
-var appVersion = "0.2.0"
+var appVersion = "0.3.0"
 
 func main() {
 	dir := flag.String("data", dataDir(), "folder for settings and the contact log")
@@ -33,12 +34,15 @@ func main() {
 	cfg := cfgStore.Get()
 	url := fmt.Sprintf("http://127.0.0.1:%d/", cfg.WebPort)
 
-	// Already running? Just show the dashboard again.
-	if alreadyRunning(cfg.WebPort) {
-		if !*noBrowser {
-			openBrowser(url)
+	// Already running? Just show the dashboard again, unless it's a different
+	// version: then this one takes over, so a new download replaces the old program.
+	if v, ok := runningVersion(cfg.WebPort); ok {
+		if v == appVersion || !stopOld(cfg.WebPort) {
+			if !*noBrowser {
+				openBrowser(url)
+			}
+			return
 		}
-		return
 	}
 	setupLogFile(filepath.Join(*dir, "contest-dashboard.log"))
 	logs.Add("app", "Contest Dashboard %s, data in %s", appVersion, *dir)
@@ -50,7 +54,7 @@ func main() {
 	listener := NewListener(store)
 	listener.Start(cfg.UDPPorts)
 
-	app := &App{cfg: cfgStore, store: store, listener: listener, demo: &Demo{}, dataDir: *dir,
+	app := &App{cfg: cfgStore, store: store, listener: listener, demo: &Demo{}, tiles: NewTileCache(filepath.Join(*dir, "tiles")), dataDir: *dir,
 		remoteSettings: *remote, quit: make(chan struct{})}
 	if *demo {
 		app.demo.Start(func(b []byte) { listener.handle(b, "demo") })
@@ -82,14 +86,37 @@ func main() {
 	store.Close()
 }
 
-func alreadyRunning(port int) bool {
+// runningVersion asks a dashboard already on this port which version it is.
+func runningVersion(port int) (string, bool) {
 	c := http.Client{Timeout: time.Second}
 	resp, err := c.Get(fmt.Sprintf("http://127.0.0.1:%d/api/status", port))
 	if err != nil {
-		return false
+		return "", false
 	}
-	resp.Body.Close()
-	return resp.StatusCode == http.StatusOK
+	defer resp.Body.Close()
+	var st struct {
+		Version string `json:"version"`
+	}
+	json.NewDecoder(resp.Body).Decode(&st)
+	return st.Version, resp.StatusCode == http.StatusOK
+}
+
+// stopOld asks the running copy to quit and waits for it to let go of the port.
+func stopOld(port int) bool {
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("http://127.0.0.1:%d/api/quit", port), nil)
+	req.Header.Set("X-Contest-Dashboard", "1")
+	c := http.Client{Timeout: 2 * time.Second}
+	if resp, err := c.Do(req); err == nil {
+		resp.Body.Close()
+	}
+	for i := 0; i < 50; i++ {
+		time.Sleep(100 * time.Millisecond)
+		if ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port)); err == nil {
+			ln.Close()
+			return true
+		}
+	}
+	return false
 }
 
 // setupLogFile keeps a log next to the settings, since the Windows build has no console window.

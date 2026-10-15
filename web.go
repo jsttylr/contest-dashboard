@@ -24,6 +24,7 @@ type App struct {
 	store          *Store
 	listener       *Listener
 	demo           *Demo
+	tiles          *TileCache
 	dataDir        string
 	remoteSettings bool
 	quit           chan struct{}
@@ -69,6 +70,7 @@ func (a *App) handler() http.Handler {
 	mux := http.NewServeMux()
 	static, _ := fs.Sub(webFiles, "web")
 	mux.Handle("/", http.FileServer(http.FS(static)))
+	mux.Handle("/tiles/", a.tiles)
 
 	mux.HandleFunc("/api/summary", func(w http.ResponseWriter, req *http.Request) {
 		c := a.viewConfig(req)

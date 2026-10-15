@@ -35,7 +35,8 @@
       <label for="units">Distances</label>
       <select id="units"><option value="mi">Miles</option><option value="km">Kilometres</option></select>
       <label for="map_tiles">Map background</label>
-      <select id="map_tiles"><option value="online">Online map (needs internet)</option><option value="offline">Simple outline (works offline)</option></select>
+      <select id="map_tiles"><option value="esri">Esri grey map (free, no key)</option><option value="osm">OpenStreetMap (free, no key)</option><option value="offline">Simple outline only</option></select>
+      <div class="help">Map pieces are saved once fetched, so a map you've already looked at keeps working without internet.</div>
       <label for="udp_ports">UDP ports</label><input id="udp_ports" placeholder="12060, 12061, 12062">
       <div class="help">Ports to listen on. Each must match a port in N1MM's broadcast settings. Default 12060, 12061, 12062.</div>
       <label for="web_port">Web page port</label><input id="web_port" type="number" min="1" max="65535">
