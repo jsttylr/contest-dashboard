@@ -309,16 +309,7 @@ func BuildSummary(snap Snapshot, cfg Config, now time.Time) *Summary {
 	s.Totals.Points = points
 	s.Totals.Mults = mults
 
-	// Best 60 minutes, sliding window over contact times.
-	j := 0
-	for i := range qsos {
-		for qsos[i].Time.Sub(qsos[j].Time) >= time.Hour {
-			j++
-		}
-		if n := i - j + 1; n > s.Rates.Best60 {
-			s.Rates.Best60 = n
-		}
-	}
+	s.Rates.Best60 = bestWindow(qsos, time.Hour)
 	if len(qsos) > 1 {
 		s.Rates.Hours = qsos[len(qsos)-1].Time.Sub(qsos[0].Time).Hours()
 	}
@@ -369,14 +360,7 @@ func BuildSummary(snap Snapshot, cfg Config, now time.Time) *Summary {
 
 	// Rate timeline: bucket size scales with the contest length.
 	if len(qsos) > 0 {
-		span := qsos[len(qsos)-1].Time.Sub(qsos[0].Time)
-		s.BucketMin = 10
-		if span > 8*time.Hour {
-			s.BucketMin = 30
-		}
-		if span > 26*time.Hour {
-			s.BucketMin = 60
-		}
+		s.BucketMin = slotMinutes(qsos)
 		s.Timeline = buckets(qsos, time.Duration(s.BucketMin)*time.Minute)
 		s.Hourly = buckets(qsos, time.Hour)
 	}
@@ -396,6 +380,18 @@ func BuildSummary(snap Snapshot, cfg Config, now time.Time) *Summary {
 		s.Recent = append(s.Recent, r)
 	}
 	return s
+}
+
+// slotMinutes picks a chart time slot that suits the contest's length.
+func slotMinutes(qsos []*QSO) int {
+	span := qsos[len(qsos)-1].Time.Sub(qsos[0].Time)
+	switch {
+	case span > 26*time.Hour:
+		return 60
+	case span > 8*time.Hour:
+		return 30
+	}
+	return 10
 }
 
 func buckets(qsos []*QSO, size time.Duration) []Bucket {

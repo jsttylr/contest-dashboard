@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operator</title>
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <h1 id="op-name">Operator</h1>
+  <span class="sub" id="contest-name"></span>
+  <span class="pill" id="live"><span class="dot"></span><span id="live-text">Waiting</span></span>
+  <span class="spacer"></span>
+  <span class="clock" id="clock"></span>
+  <nav>
+    <select id="op-pick" title="Operator"></select>
+    <a class="btn" href="operators.html" id="ops-link">Compare</a>
+    <a class="btn" href="./" id="dash-link">Dashboard</a>
+    <button id="theme" title="Switch between light and dark">Light/Dark</button>
+  </nav>
+</header>
+<main class="grid">
+  <div class="span-12 tiles" id="tiles"></div>
+  <div class="banner" id="empty" hidden>No contacts from this operator in this contest.</div>
+  <section class="card span-8">
+    <h2>Contacts over time <span class="note" id="rate-note"></span></h2>
+    <div class="chart-box"><canvas id="runsp-chart" aria-label="Run and S&P contacts per time slot"></canvas></div>
+  </section>
+  <section class="card span-4">
+    <h2>Bands and modes</h2>
+    <table id="bandmode"></table>
+  </section>
+  <section class="card span-7">
+    <h2>Last contacts</h2>
+    <div class="scroll" style="max-height:360px"><table id="recent"></table></div>
+  </section>
+  <section class="card span-5">
+    <h2>Top countries</h2>
+    <div class="chart-box" style="height:360px"><canvas id="country-chart" aria-label="Contacts by country"></canvas></div>
+  </section>
+  <section class="card span-12">
+    <h2>Hour by hour <span class="note">this operator's contacts each UTC hour, by band</span></h2>
+    <div class="scroll"><table id="hourly" class="heat"></table></div>
+  </section>
+</main>
+<script src="vendor/chart.umd.js"></script>
+<script src="common.js"></script>
+<script src="op.js"></script>
+</body>
+</html>

@@ -126,11 +126,14 @@ func runDemo(stop chan struct{}, handle func([]byte)) {
 		op    string
 		band  string
 		run   bool
+		next  time.Time
 	}
 	stations := []*stn{
-		{"SHACK-PC1", 1, "W1ABC", "20m", true},
-		{"SHACK-PC2", 2, "K1XYZ", "40m", false},
+		{name: "SHACK-PC1", radio: 1, op: "W1ABC", band: "20m", run: true},
+		{name: "SHACK-PC2", radio: 2, op: "K1XYZ", band: "40m"},
 	}
+	// Some operators are quicker than others, so the comparison page has something to show.
+	speed := map[string]float64{"W1ABC": 1.0, "K1XYZ": 1.5, "N1QQQ": 0.8, "KB1ZZ": 1.9}
 	ops := []string{"W1ABC", "K1XYZ", "N1QQQ", "KB1ZZ"}
 	bands := []string{"80m", "40m", "20m", "15m", "10m"}
 	nr := int(time.Now().Unix()) * 100000 // unique IDs across demo runs
@@ -148,44 +151,70 @@ func runDemo(stop chan struct{}, handle func([]byte)) {
 			}
 		}
 	}
+	// gap is the time to the station's next contact: quick when running, slower searching,
+	// and now and then a longer pause.
+	gap := func(s *stn) time.Duration {
+		secs := 15 + r.Float64()*25
+		if !s.run {
+			secs = 70 + r.Float64()*110
+		}
+		if r.Intn(40) == 0 {
+			secs += 600 + r.Float64()*1500
+		}
+		return time.Duration(secs * speed[s.op] * float64(time.Second))
+	}
 	shuffle := func(s *stn) {
-		if r.Intn(8) == 0 {
+		if r.Intn(25) == 0 {
 			s.band = bands[r.Intn(len(bands))]
 		}
-		if r.Intn(10) == 0 {
+		if r.Intn(15) == 0 {
 			s.run = !s.run
 		}
-		if r.Intn(20) == 0 {
-			s.op = ops[r.Intn(len(ops))]
+		if r.Intn(25) == 0 {
+			// Hand over to an operator who isn't already on the other radio.
+			for {
+				o := ops[r.Intn(len(ops))]
+				if o != stations[0].op && o != stations[1].op {
+					s.op = o
+					break
+				}
+			}
+		}
+	}
+	step := func(now time.Time) {
+		for {
+			s := stations[0]
+			if stations[1].next.Before(s.next) {
+				s = stations[1]
+			}
+			if s.next.After(now) {
+				return
+			}
+			emit(s, s.next)
+			shuffle(s)
+			s.next = s.next.Add(gap(s))
 		}
 	}
 
 	// Backfill three hours so the charts have something to show straight away.
 	now := time.Now().UTC()
-	t := now.Add(-3 * time.Hour)
-	for t.Before(now) {
-		s := stations[r.Intn(2)]
-		emit(s, t)
-		shuffle(s)
-		hour := t.Hour()
-		gap := 8 + r.Intn(30) + 6*(hour%3)
-		t = t.Add(time.Duration(gap) * time.Second)
+	for _, s := range stations {
+		s.next = now.Add(-3 * time.Hour).Add(gap(s))
 	}
+	step(now)
 
 	radioTick := time.NewTicker(2 * time.Second)
 	scoreTick := time.NewTicker(20 * time.Second)
+	contactTick := time.NewTicker(time.Second)
 	defer radioTick.Stop()
 	defer scoreTick.Stop()
-	next := time.After(3 * time.Second)
+	defer contactTick.Stop()
 	for {
 		select {
 		case <-stop:
 			return
-		case <-next:
-			s := stations[r.Intn(2)]
-			emit(s, time.Now().UTC())
-			shuffle(s)
-			next = time.After(time.Duration(3+r.Intn(10)) * time.Second)
+		case <-contactTick.C:
+			step(time.Now().UTC())
 		case <-radioTick.C:
 			for _, s := range stations {
 				f := map[string]int{"80m": 3750, "40m": 7150, "20m": 14200, "15m": 21250, "10m": 28450}[s.band]*100 + r.Intn(50)*10

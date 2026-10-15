@@ -15,6 +15,7 @@ It is a single small program. No Node-RED, no Raspberry Pi, no database to insta
 - **Map** of every contact, coloured by band, with lines to the 25 most recent. Contacts are placed by grid square when the exchange has one, by state, province or ARRL section in domestic contests, and otherwise by country.
 - **Radios**: frequency, mode, operator, run or search-and-pounce, and a red TX marker while transmitting, for every radio N1MM reports.
 - **Contacts over time** by band, **bands and modes** table, **operators** league table, **top countries**, and an **hour by hour** rate sheet.
+- **Operators**: click any operator for their own page (run rate, S&P rate, average rate, best hour and best 10 minutes, time on the air, bands, countries, hour by hour), or use **Compare operators** to see everyone side by side, sortable, with the best in each column highlighted. Run and S&P rates count only the time spent doing each, and leave out breaks over 10 minutes.
 - A **full-screen map** page (the **Map** button), made for a TV or streaming.
 
 ## First run (Windows)
@@ -24,7 +25,7 @@ It is a single small program. No Node-RED, no Raspberry Pi, no database to insta
 3. When Windows Firewall asks, tick **Private networks** and click **Allow**. This lets other computers watch the dashboard and lets N1MM on other computers reach it.
 4. Your web browser opens the dashboard at http://127.0.0.1:8060. There is no program window. Double-click the program again any time to reopen the page. To stop it, use **Stop the dashboard program** at the bottom of the Settings page.
 
-To try it before a contest, open **Settings** and click **Start the demo**. It makes up a two-radio contest with a few hours of history and new contacts every few seconds. Delete it from the Contests list when you're done.
+To try it before a contest, open **Settings** and click **Start the demo**. It makes up a two-radio contest with a few hours of history and new contacts at a realistic pace. Delete it from the Contests list when you're done.
 
 ## Pointing N1MM+ at the dashboard
 

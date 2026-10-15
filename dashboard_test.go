@@ -211,3 +211,22 @@ func TestSummary(t *testing.T) {
 		t.Errorf("logger score not used: %+v", sum.Totals)
 	}
 }
+
+func TestOperatorRates(t *testing.T) {
+	base := time.Date(2025, 11, 29, 12, 0, 0, 0, time.UTC)
+	mk := func(min int, run bool) *QSO {
+		return &QSO{Call: "DL1A", Time: base.Add(time.Duration(min) * time.Minute), Run: run, Operator: "W1ABC"}
+	}
+	// Running for 4 minutes, searching for 4, then an hour's break before one more run contact.
+	qs := []*QSO{mk(0, true), mk(2, true), mk(4, true), mk(6, false), mk(8, false), mk(68, true)}
+	st := computeOpStats("W1ABC", qs, 12, base.Add(70*time.Minute))
+	if st.RunQSOs != 4 || st.SPQSOs != 2 {
+		t.Errorf("run/sp counts %d/%d", st.RunQSOs, st.SPQSOs)
+	}
+	if int(st.RunRate+0.5) != 60 || int(st.SPRate+0.5) != 30 || int(st.AvgRate+0.5) != 45 {
+		t.Errorf("rates run %.1f sp %.1f avg %.1f", st.RunRate, st.SPRate, st.AvgRate)
+	}
+	if st.Best10 != 5 || st.Best60 != 5 || st.Share != 50 || st.Last60 != 1 {
+		t.Errorf("best10 %d best60 %d share %.0f last60 %d", st.Best10, st.Best60, st.Share, st.Last60)
+	}
+}

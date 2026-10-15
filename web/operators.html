@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operators</title>
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <h1>Operators</h1>
+  <span class="sub" id="contest-name"></span>
+  <span class="pill" id="live"><span class="dot"></span><span id="live-text">Waiting</span></span>
+  <span class="spacer"></span>
+  <span class="clock" id="clock"></span>
+  <nav>
+    <a class="btn" href="./" id="dash-link">Dashboard</a>
+    <button id="theme" title="Switch between light and dark">Light/Dark</button>
+  </nav>
+</header>
+<main class="grid">
+  <section class="card span-12">
+    <h2>Compare operators <span class="note">click a column to sort, a name for details; best in each column in green</span></h2>
+    <div class="scroll" style="max-height:none"><table id="compare"></table></div>
+    <p class="muted" style="margin:10px 0 0;font-size:12px">
+      Run rate and S&amp;P rate count only the time spent doing each: the gap before a contact is credited to whichever the operator was doing for that contact, and gaps over 10 minutes are left out as breaks.
+      Time on air leaves out breaks of 30 minutes or more, as contest rules do.
+    </p>
+  </section>
+  <section class="card span-6">
+    <h2>Run rate and S&amp;P rate <span class="note">QSOs per hour</span></h2>
+    <div class="chart-box tall"><canvas id="rates-chart" aria-label="Run and S&P rate per operator"></canvas></div>
+  </section>
+  <section class="card span-6">
+    <h2>QSOs over time <span class="note" id="cumul-note"></span></h2>
+    <div class="chart-box tall"><canvas id="cumul-chart" aria-label="Running QSO total per operator"></canvas></div>
+  </section>
+</main>
+<script src="vendor/chart.umd.js"></script>
+<script src="common.js"></script>
+<script src="ops.js"></script>
+</body>
+</html>

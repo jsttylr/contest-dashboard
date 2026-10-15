@@ -18,6 +18,7 @@
   <nav>
     <select id="contest-pick" title="Contest to show"></select>
     <a class="btn" href="map.html" id="map-link">Map</a>
+    <a class="btn" href="operators.html" id="ops-nav">Operators</a>
     <a class="btn" href="settings.html">Settings</a>
     <button id="theme" title="Switch between light and dark">Light/Dark</button>
   </nav>
@@ -47,7 +48,7 @@
     <table id="bandmode"></table>
   </section>
   <section class="card span-6">
-    <h2>Operators</h2>
+    <h2>Operators <span class="note">click a name for details</span><span class="spacer"></span><a class="btn small" id="ops-link" href="operators.html">Compare operators</a></h2>
     <div class="scroll"><table id="ops"></table></div>
   </section>
   <section class="card span-6">
@@ -61,6 +62,7 @@
 </main>
 <script src="vendor/chart.umd.js"></script>
 <script src="vendor/leaflet.js"></script>
+<script src="common.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

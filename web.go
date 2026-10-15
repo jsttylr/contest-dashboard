@@ -81,6 +81,14 @@ func (a *App) handler() http.Handler {
 		writeJSON(w, BuildMap(a.store.Snapshot(), a.viewConfig(req)))
 	})
 
+	mux.HandleFunc("/api/operators", func(w http.ResponseWriter, req *http.Request) {
+		writeJSON(w, BuildOps(a.store.Snapshot(), a.viewConfig(req), time.Now().UTC()))
+	})
+
+	mux.HandleFunc("/api/operator", func(w http.ResponseWriter, req *http.Request) {
+		writeJSON(w, BuildOpDetail(a.store.Snapshot(), a.viewConfig(req), req.URL.Query().Get("op"), time.Now().UTC()))
+	})
+
 	// Server-sent events: the page refreshes itself whenever something changes.
 	mux.HandleFunc("/api/events", func(w http.ResponseWriter, req *http.Request) {
 		fl, ok := w.(http.Flusher)
