@@ -67,6 +67,8 @@ Then open `http://<that machine's address>:8060/` from any browser on your netwo
 - Inside Docker, settings can be changed from any computer on your network (normally only the computer running the dashboard can change them).
 - Docker Desktop on Windows can't hear UDP broadcasts well, so on Windows the plain program above is the easier choice.
 
+If you use Docker Compose, the repo includes a ready-made [`docker-compose.yml`](docker-compose.yml): copy it to your Docker host and run `docker compose up -d`.
+
 The image tags are `latest` (newest release), a version number such as `0.1.0`, and `main` (newest build, may be unfinished).
 
 ## Updating

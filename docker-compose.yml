@@ -1,0 +1,16 @@
+# Contest Dashboard on a Docker host. Start it with: docker compose up -d
+services:
+  contest-dashboard:
+    # "latest" is the newest release; use "main" for the newest build before a release exists.
+    image: ghcr.io/jsttylr/contest-dashboard:latest
+    container_name: contest-dashboard
+    restart: unless-stopped
+    # Host networking lets the container hear N1MM's UDP broadcasts.
+    network_mode: host
+    volumes:
+      - contest-dashboard-data:/data   # settings and contacts survive updates
+    environment:
+      - TZ=UTC
+
+volumes:
+  contest-dashboard-data:
