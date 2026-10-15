@@ -93,7 +93,7 @@ Install Go 1.24 or newer, then `go build .` in this folder. `go test ./...` runs
 - Country data: AD1C's [country files](https://www.country-files.com/), via `@ham2k/lib-country-files` (MIT).
 - Map: [Leaflet](https://leafletjs.com/) (BSD-2-Clause), with the outline from [world-atlas](https://github.com/topojson/world-atlas) / Natural Earth (ISC, public domain). Online map tiles from Esri and OpenStreetMap contributors.
 - Charts: [Chart.js](https://www.chartjs.org/) (MIT).
-- Inspired by the Node-Red Contesting Dashboard.
+- Inspired by the [Node-RED Contesting Dashboard](https://github.com/kylekrieg/node-red-contesting-dashboard) by Kyle Krieg, AA0Z. Many of the ideas here, and the idea of a live contest dashboard fed by N1MM, come from his work. Thank you, Kyle.
 
 ## License
 
